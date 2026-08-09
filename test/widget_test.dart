@@ -107,8 +107,8 @@ void main() {
     expect(find.text('Sausage sizzle'), findsOneWidget);
 
     // The live portion count is on every card.
-    expect(find.text('Engineering courtyard  -  40 left'), findsOneWidget);
-
+    expect(find.text('Engineering courtyard'), findsOneWidget);
+    expect(find.text('Plenty (40)'), findsOneWidget);
     // The samosas ran out, so that tile is disabled but still listed.
     final samosas = tester.widget<ListTile>(
       find.ancestor(
