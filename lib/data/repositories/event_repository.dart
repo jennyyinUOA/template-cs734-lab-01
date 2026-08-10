@@ -10,7 +10,8 @@ import '../services/api_service.dart';
 class EventRepository {
   EventRepository({ApiService? api}) : _api = api ?? ApiService();
 
+  // Future<List<KaiEvent>> fetchEvents() => _api.fetchEvents();
   final ApiService _api;
-
   Future<List<KaiEvent>> fetchEvents() => _api.fetchEvents();
+  Future<KaiEvent> eatEvent(String id) => _api.eatEvent(id);
 }

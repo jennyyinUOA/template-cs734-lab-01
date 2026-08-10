@@ -5,6 +5,7 @@ import 'portions_pill.dart';
 
 import '../../data/models/kai_event.dart';
 import 'events_view_model.dart';
+import 'eat_button.dart';
 
 // No memory of its own, so it is a StatelessWidget. Stateful is a choice.
 class KaiHomePage extends StatelessWidget {
@@ -157,7 +158,14 @@ class KaiEventCard extends StatelessWidget {
               PortionsPill(event: event),
             ],
           ),
-          trailing: FavouriteButton(event: event),
+          //trailing: FavouriteButton(event: event),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              EatButton(event: event),
+              FavouriteButton(event: event),
+            ],
+          ),
         ),
       ),
     );

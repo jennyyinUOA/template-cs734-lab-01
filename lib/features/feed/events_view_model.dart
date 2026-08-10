@@ -45,6 +45,18 @@ class EventsViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<KaiEvent> eat(String id) async {
+    final updatedEvent = await repo.eatEvent(id);
+
+    final index = events.indexWhere((event) => event.id == id);
+
+    if (index != -1) {
+      events[index] = updatedEvent;
+      notifyListeners();
+    }
+    return updatedEvent;
+  }
+
   // How far away each event is, in metres, once we have been told where the
   // phone is. Null until then, which is also what "the user said no" looks
   // like: no distances, feed in whatever order the server sent it.
