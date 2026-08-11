@@ -5,9 +5,10 @@ import '../../data/models/kai_event.dart';
 import 'events_view_model.dart';
 
 class EatButton extends StatefulWidget {
-  const EatButton({super.key, required this.event});
+  const EatButton({super.key, required this.event, this.onEaten});
 
   final KaiEvent event;
+  final ValueChanged<KaiEvent>? onEaten;
 
   @override
   State<EatButton> createState() => _EatButtonState();
@@ -24,7 +25,13 @@ class _EatButtonState extends State<EatButton> {
     });
 
     try {
-      await context.read<EventsViewModel>().eat(widget.event.id);
+      // await context.read<EventsViewModel>().eat(widget.event.id);
+      final updatedEvent = await context.read<EventsViewModel>().eat(
+        widget.event.id,
+      );
+
+      if (!mounted) return;
+      widget.onEaten?.call(updatedEvent);
     } catch (error) {
       if (!mounted) return;
 

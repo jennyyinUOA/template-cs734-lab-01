@@ -13,5 +13,6 @@ class EventRepository {
   // Future<List<KaiEvent>> fetchEvents() => _api.fetchEvents();
   final ApiService _api;
   Future<List<KaiEvent>> fetchEvents() => _api.fetchEvents();
+  Future<KaiEvent> fetchEvent(String id) => _api.fetchEvent(id);
   Future<KaiEvent> eatEvent(String id) => _api.eatEvent(id);
 }

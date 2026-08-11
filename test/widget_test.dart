@@ -72,13 +72,39 @@ Widget buildApp(MockClient client) => ChangeNotifierProvider(
   child: const KaiFinderApp(),
 );
 
-MockClient respondingWith(String body, {int status = 200}) => MockClient(
-  (_) async => http.Response(
-    body,
-    status,
-    headers: {'content-type': 'application/json; charset=utf-8'},
-  ),
-);
+// MockClient respondingWith(String body, {int status = 200}) => MockClient(
+//   (_) async => http.Response(
+//     body,
+//     status,
+//     headers: {'content-type': 'application/json; charset=utf-8'},
+//   ),
+// );
+MockClient respondingWith(String body, {int status = 200}) {
+  return MockClient((request) async {
+    var responseBody = body;
+
+    final isSingleEventRequest =
+        request.method == 'GET' &&
+        request.url.pathSegments.length == 2 &&
+        request.url.pathSegments.first == 'events';
+
+    if (status == 200 && isSingleEventRequest) {
+      final events = jsonDecode(body) as List<dynamic>;
+      final id = request.url.pathSegments[1];
+      final event = events.cast<Map<String, dynamic>>().firstWhere(
+        (event) => event['id'] == id,
+      );
+
+      responseBody = jsonEncode(event);
+    }
+
+    return http.Response(
+      responseBody,
+      status,
+      headers: {'content-type': 'application/json; charset=utf-8'},
+    );
+  });
+}
 
 // The count shown in the app bar chip.
 Finder badge(String count) =>
@@ -151,8 +177,9 @@ void main() {
     await tester.tap(find.text('Free samosas'));
     await tester.pumpAndSettle();
 
+    // The detail screen reuses the portions pill for a sold-out event.
     expect(find.byType(EventDetailScreen), findsOneWidget);
-    expect(find.text('0 portions left'), findsOneWidget);
+    expect(find.text('Gone (0)'), findsOneWidget);
   });
 
   testWidgets('starring a card updates that star and the badge', (
