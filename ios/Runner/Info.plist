@@ -8,6 +8,9 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Kai Finder uses your location to show how far away the free food is.</string>
 	-->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Kai Finder uses your location to show how far away the free food is.</string>
+	
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:geolocator/geolocator.dart';
 
 import '../feed/events_view_model.dart';
 import '../feed/kai_home_page.dart';
@@ -24,6 +25,10 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
   bool _isLoading = true;
   String? _error;
   KaiEvent? _event;
+  double? _distanceInMetres;
+  bool _isLoadingLocation = false;
+  String? _locationError;
+  bool _permissionDeniedForever = false;
 
   @override
   void initState() {
@@ -57,6 +62,78 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
       if (mounted) {
         setState(() {
           _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadDistance() async {
+    setState(() {
+      _isLoadingLocation = true;
+      _locationError = null;
+      _permissionDeniedForever = false;
+    });
+
+    try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+
+      if (!serviceEnabled) {
+        if (!mounted) return;
+        setState(() {
+          _locationError = 'Please turn on location services.';
+        });
+        // throw Exception('Location services are turned off');
+        return;
+      }
+
+      var permission = await Geolocator.checkPermission();
+
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+
+      if (permission == LocationPermission.denied) {
+        if (!mounted) return;
+        setState(() {
+          _locationError = 'Location permission was denied. You can try again.';
+        });
+        return;
+        // throw Exception('Location permission was denied');
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        if (!mounted) return;
+        setState(() {
+          _locationError =
+              'Location permission is permanently denied. Open Settings to allow it.';
+          _permissionDeniedForever = true;
+        });
+        return;
+        // throw Exception('Location permission was permanently denied');
+      }
+
+      final position = await Geolocator.getCurrentPosition();
+
+      final event = _event;
+      if (event == null) {
+        return;
+      }
+
+      final distance = Geolocator.distanceBetween(
+        position.latitude,
+        position.longitude,
+        event.lat,
+        event.lng,
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _distanceInMetres = distance;
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingLocation = false;
         });
       }
     }
@@ -98,6 +175,45 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
             // Text('${event.portionsLeft} portions left'),
             // FavouriteButton(event: event),
             PortionsPill(event: event),
+
+            const SizedBox(height: 16),
+            if (_distanceInMetres != null)
+              Text('About ${_distanceInMetres!.round()} m from you')
+            else ...[
+              if (_locationError != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(_locationError!, textAlign: TextAlign.center),
+                ),
+
+              if (_permissionDeniedForever)
+                ElevatedButton(
+                  onPressed: Geolocator.openAppSettings,
+                  child: const Text('Open Settings'),
+                )
+              else
+                ElevatedButton(
+                  onPressed: _isLoadingLocation ? null : _loadDistance,
+                  child: _isLoadingLocation
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Show distance'),
+                ),
+            ],
+
+            // ElevatedButton(
+            //   onPressed: _isLoadingLocation ? null : _loadDistance,
+            //   child: _isLoadingLocation
+            //       ? const SizedBox(
+            //           width: 18,
+            //           height: 18,
+            //           child: CircularProgressIndicator(strokeWidth: 2),
+            //         )
+            //       : const Text('Show distance'),
+            // ),
             const SizedBox(height: 12),
             EatButton(
               event: event,
